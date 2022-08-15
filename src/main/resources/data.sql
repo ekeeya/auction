@@ -1,1 +1,4 @@
-INSERT INTO auth_user(account_type, username, name, password, enabled,deleted) values ('SELLER','seller', 'The American Embassy', '$2a$10$wZ4wMk4DoUBXy6CjOGVWYOFzApY5owhg7HYuLNd7Tfmb9heTqCmhe', 't', 'f' );
+CREATE EXTENSION IF NOT EXISTS hstore;
+INSERT INTO auth_user(account_type, username, name, password, enabled,deleted, settings) values ('SELLER','seller', 'The American Embassy',
+                                                                                                 '$2a$10$wZ4wMk4DoUBXy6CjOGVWYOFzApY5owhg7HYuLNd7Tfmb9heTqCmhe',
+                                                                                                 't', 'f', '"auto_notify"=>"true"' );

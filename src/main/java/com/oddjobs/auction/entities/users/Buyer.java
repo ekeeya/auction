@@ -7,7 +7,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("buyer")
+@DiscriminatorValue("BUYER")
 @Data
 public class Buyer extends BaseUserEntity{
 

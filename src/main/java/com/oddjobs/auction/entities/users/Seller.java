@@ -2,18 +2,18 @@ package com.oddjobs.auction.entities.users;
 
 import lombok.Data;
 
-import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.validation.constraints.Size;
 
 @Entity
 @Data
-@DiscriminatorValue("seller")
+@DiscriminatorValue("SELLER")
 public class Seller extends  BaseUserEntity {
 
-    @Column(nullable = false)
     private String name;
 
+    @Size(min=14, max = 14, message = "Ugandan format national Id number must be 14 characters")
     private String nin;
 
     private String Identification;
