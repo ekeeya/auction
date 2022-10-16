@@ -2,6 +2,7 @@ package com.oddjobs.auction.entities.users;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.oddjobs.auction.entities.BaseEntity;
+import com.oddjobs.auction.utils.Utils;
 import com.vladmihalcea.hibernate.type.basic.PostgreSQLHStoreType;
 import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
@@ -22,18 +23,19 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @TypeDef(name="hstore", typeClass = PostgreSQLHStoreType.class)
-public class BaseUserEntity extends BaseEntity {
+public class User extends BaseEntity {
 
     @Column(name = "account_type", nullable = false, insertable = false, updatable = false)
-    private ACCOUNT_TYPE accountType;
+    @Enumerated(EnumType.STRING)
+    private Utils.ACCOUNT_TYPE accountType;
 
     @Column(name="username", nullable = false, unique = true)
-    private String userName;
+    private String username;
 
     @Column(nullable = false)
     private String password;
 
-    private ROLES role = ROLES.USER;
+    private Utils.ROLES role = Utils.ROLES.USER;
 
     private String email;
 
@@ -42,12 +44,9 @@ public class BaseUserEntity extends BaseEntity {
     @Type(type = "hstore")
     @Column(columnDefinition = "hstore")
     private Map<String, String> settings = new HashMap<>();
-    public static enum ACCOUNT_TYPE{
-        ADMIN, BUYER, SELLER
-    }
 
-    public static enum ROLES {
-        ADMIN, REPORTS, COMMUNICATIONS, USER
-    }
+
+
+
 
 }
