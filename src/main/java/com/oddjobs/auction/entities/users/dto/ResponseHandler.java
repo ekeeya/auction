@@ -123,12 +123,11 @@ public class ResponseHandler {
             mapper.put("success", !responseHandler.isError());
             mapper.put("message", responseHandler.getMessage());
             mapper.put("data", data);
-            if (data instanceof List){
+            if (data instanceof List && !responseHandler.isError()){
                 mapper.put("count", responseHandler.getCount());
                 mapper.put("size", responseHandler.getSize());
                 mapper.put("totalPages", responseHandler.getTotalPages());
             }
-
             return new ResponseEntity<Object>(mapper, responseHandler.getStatus());
 
         }catch (Exception e){

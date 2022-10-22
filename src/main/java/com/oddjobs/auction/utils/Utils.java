@@ -7,6 +7,11 @@ public class Utils {
     public static  enum Gender{
         MALE, FEMALE
     }
+
+    public static enum ACCOUNT_STATUS {
+        ACTIVE, DISABLED
+    }
+
     public static enum ACCOUNT_TYPE{
         ADMIN(Values.ADMIN), BUYER(Values.BUYER), SELLER(Values.SELLER);
         private ACCOUNT_TYPE (String val) {

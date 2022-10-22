@@ -33,8 +33,7 @@ public class SystemUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-
-        return true;
+        return !user.isExpired();
     }
 
     @Override
@@ -44,7 +43,7 @@ public class SystemUserDetails implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return !user.isExpired();
     }
 
     @Override

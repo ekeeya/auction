@@ -1,8 +1,7 @@
 package com.oddjobs.auction.services.users;
 
-import com.oddjobs.auction.controllers.users.Mapper;
+import com.oddjobs.auction.entities.users.dto.Mapper;
 import com.oddjobs.auction.entities.users.User;
-import com.oddjobs.auction.entities.users.dto.GenericUserDTO;
 import com.oddjobs.auction.repositories.UserRepository;
 import com.oddjobs.auction.services.base.BaseServiceImpl;
 import com.oddjobs.auction.utils.Utils;
@@ -20,17 +19,25 @@ import java.util.List;
 @Service
 public class UserServiceImpl extends BaseServiceImpl implements UserService{
     private final UserRepository userRepository;
-    private final Mapper mapper;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, Mapper mapper) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.mapper = mapper;
+    }
+
+    @Override
+    public User save(User user){
+        return userRepository.save(user);
     }
 
     @Override
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
@@ -42,5 +49,19 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService{
     @Override
     public List<User> findByAccountType(Utils.ACCOUNT_TYPE accountType, int pageNo, int size, String sortBy) {
         return userRepository.findByAccountType(accountType);
+    }
+
+    @Override
+    public void disableEnableAccount(User user, boolean value){
+        user.setEnabled(value);
+        user.setStatus(value ? Utils.ACCOUNT_STATUS.ACTIVE : Utils.ACCOUNT_STATUS.DISABLED);
+        userRepository.save(user);
+    }
+    @Override
+    public void deleteAccount(User user, boolean permanent){
+        if (permanent)
+       if (permanent){
+           userRepository.delete(user);
+       }
     }
 }

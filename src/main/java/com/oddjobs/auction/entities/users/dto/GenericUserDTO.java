@@ -4,6 +4,7 @@ import com.oddjobs.auction.utils.Utils;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 
 @Data
@@ -16,10 +17,11 @@ public class GenericUserDTO implements Serializable {
     private String name;
     private Utils.ACCOUNT_TYPE accountType;
     private String nin;
-    private String Identification;
+    private String identification;
     private  String firstname;
     private String lastname;
     private Utils.ROLES role ;
     private Utils.Gender gender;
-    private String Department;
+    private String department;
+    private Date createdAt;
 }

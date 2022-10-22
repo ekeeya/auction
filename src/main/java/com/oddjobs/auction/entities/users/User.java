@@ -23,7 +23,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @TypeDef(name="hstore", typeClass = PostgreSQLHStoreType.class)
-public class User extends BaseEntity {
+public  class User extends BaseEntity {
 
     @Column(name = "account_type", nullable = false, insertable = false, updatable = false)
     @Enumerated(EnumType.STRING)
@@ -40,6 +40,11 @@ public class User extends BaseEntity {
     private String email;
 
     private String address;
+
+    @Column(name="is_expired")
+    private boolean isExpired = false;
+
+    private Utils.ACCOUNT_STATUS status = Utils.ACCOUNT_STATUS.ACTIVE;
 
     @Type(type = "hstore")
     @Column(columnDefinition = "hstore")
