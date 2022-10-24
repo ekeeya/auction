@@ -36,6 +36,11 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService{
     }
 
     @Override
+    public User getUserById(Long id) {
+        return userRepository.getById(id);
+    }
+
+    @Override
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
@@ -59,9 +64,11 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService{
     }
     @Override
     public void deleteAccount(User user, boolean permanent){
-        if (permanent)
        if (permanent){
            userRepository.delete(user);
+       }else{
+           user.setDeleted(true);
+           userRepository.save(user);
        }
     }
 }

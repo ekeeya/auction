@@ -22,7 +22,6 @@ public class SystemUserDetailsService implements UserDetailsService {
        if (user == null){
            throw new UsernameNotFoundException(username);
        }
-
-       return new SystemUserDetails(user);
+       return user;
     }
 }

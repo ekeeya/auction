@@ -20,20 +20,22 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping("/api")
-public class SystemAccessController {
+@ResponseBody
+@RequestMapping("/api/account")
+public class AccountController {
     private final Mapper mapper;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public SystemAccessController(Mapper mapper, UserService userService, PasswordEncoder passwordEncoder) {
+    public AccountController(Mapper mapper, UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
@@ -73,19 +75,20 @@ public class SystemAccessController {
         }
 
     }
+
     @PostMapping("/register")
-    @ResponseBody
+    @RolesAllowed({"ADMIN"})
     public ResponseEntity<?> registerUser(
-            @RequestBody @Valid  RegisterForm registerForm, BindingResult bindingResult ){
+            @RequestBody @Valid RegisterForm registerForm, BindingResult bindingResult) {
         ResponseHandler response;
         String messages;
-        if (registerForm.emailAlreadyExists(userService)){
+        if (registerForm.emailAlreadyExists(userService)) {
             messages = "Email already exists";
-            ObjectError error = new ObjectError(bindingResult.getObjectName(),messages );
+            ObjectError error = new ObjectError(bindingResult.getObjectName(), messages);
             bindingResult.addError(error);
 
         }
-        if (registerForm.usernameAlreadyExists(userService)){
+        if (registerForm.usernameAlreadyExists(userService)) {
             messages = "Username already exists";
             ObjectError error = new ObjectError(bindingResult.getObjectName(), messages);
             bindingResult.addError(error);
@@ -94,29 +97,29 @@ public class SystemAccessController {
             List<ObjectError> errors = bindingResult.getAllErrors();
             registerForm.setErrors(errors);
             messages = "Errors in your request";
-            response= new ResponseHandler.ResponseHandlerBuilder()
+            response = new ResponseHandler.ResponseHandlerBuilder()
                     .error(true)
                     .data(registerForm.getReadableErrors())
                     .status(HttpStatus.BAD_REQUEST)
                     .message(messages)
                     .build();
 
-        }else{
+        } else {
 
             String accountType = registerForm.getAccountType();
             User user;
-            if (accountType.equals(Utils.ACCOUNT_TYPE.SELLER.name())){
-                user =  new Seller();
+            if (accountType.equals(Utils.ACCOUNT_TYPE.SELLER.name())) {
+                user = new Seller();
                 ((Seller) user).setIdentification(registerForm.getIdentification());
                 ((Seller) user).setName(registerForm.getName());
                 ((Seller) user).setNin(registerForm.getNin());
 
-            }else if(accountType.equals(Utils.ACCOUNT_TYPE.BUYER.name())){
+            } else if (accountType.equals(Utils.ACCOUNT_TYPE.BUYER.name())) {
                 user = new Buyer();
                 ((Buyer) user).setFirstname(registerForm.getFirstname());
                 ((Buyer) user).setLastname(registerForm.getLastname());
                 ((Buyer) user).setGender(registerForm.getGender());
-            }else {
+            } else {
                 user = new AdminUser();
                 ((AdminUser) user).setFirstname(registerForm.getFirstname());
                 ((AdminUser) user).setLastname(registerForm.getLastname());
@@ -132,9 +135,46 @@ public class SystemAccessController {
                     .error(false)
                     .data(mapper.toDTO(u))
                     .status(HttpStatus.OK)
-                    .message("User "+ user.getUsername() +" successfully registered")
+                    .message("User " + user.getUsername() + " successfully registered")
                     .build();
         }
         return ResponseHandler.generateResponse(response);
     }
+
+    @GetMapping("/changeStatus")
+    @RolesAllowed({"ADMIN"})
+    public ResponseEntity<?> disableAccount(
+            @RequestParam(name = "userId") Long userId,
+            @RequestParam(name = "enable") boolean enable
+    ) {
+        User user = userService.getUserById(userId);
+        String status = enable ? "Enabled" : "Disabled";
+        String message;
+        HttpStatus statusCode = HttpStatus.OK;
+        boolean error = false;
+        ResponseHandler response;
+        if (user == null) {
+            message = "Account you are trying to " + status + " does not exists";
+            statusCode = HttpStatus.BAD_REQUEST;
+            error = true;
+        } else {
+            if (!user.getEnabled() && !enable) {
+                message = "Account is already Disabled";
+            } else if (user.getEnabled() && enable) {
+                message = "Account is already Enabled";
+            } else {
+                userService.disableEnableAccount(user, enable);
+                message = "User Account has been " + status;
+            }
+        }
+        response = new ResponseHandler.ResponseHandlerBuilder()
+                .error(error)
+                .status(statusCode)
+                .message(message)
+                .build();
+        return ResponseHandler.generateResponse(response);
+    }
+
+
+
 }

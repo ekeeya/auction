@@ -2,6 +2,7 @@ package com.oddjobs.auction.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -26,8 +27,9 @@ public abstract class BaseEntity implements Serializable {
 
     @CreatedDate
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created_at", insertable = false)
+    @Column(name = "created_at", insertable = false, columnDefinition = "TIMESTAMP NOT NULL DEFAULT NOW()")
     @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
     private Date createdAt;
 
     @CreatedBy
@@ -35,7 +37,7 @@ public abstract class BaseEntity implements Serializable {
     private String createdBy;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "last_modified_at", insertable = false)
+    @Column(name = "last_modified_at", insertable = false,columnDefinition = "TIMESTAMP NOT NULL DEFAULT NOW()")
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastModifiedAt;
@@ -44,9 +46,9 @@ public abstract class BaseEntity implements Serializable {
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
-    @Column(name="deleted")
+    @Column(name="deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean deleted =  false;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean enabled = true;
 }

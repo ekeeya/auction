@@ -9,8 +9,11 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +26,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @TypeDef(name="hstore", typeClass = PostgreSQLHStoreType.class)
-public  class User extends BaseEntity {
+public  class User extends BaseEntity implements UserDetails {
 
     @Column(name = "account_type", nullable = false, insertable = false, updatable = false)
     @Enumerated(EnumType.STRING)
@@ -35,14 +38,16 @@ public  class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
+    @Column(name="role")
+    @Enumerated(EnumType.STRING)
     private Utils.ROLES role = Utils.ROLES.USER;
 
     private String email;
 
     private String address;
 
-    @Column(name="is_expired")
-    private boolean isExpired = false;
+    @Column(name="is_expired", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isExpired = false;
 
     private Utils.ACCOUNT_STATUS status = Utils.ACCOUNT_STATUS.ACTIVE;
 
@@ -51,7 +56,28 @@ public  class User extends BaseEntity {
     private Map<String, String> settings = new HashMap<>();
 
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
 
+    @Override
+    public boolean isAccountNonExpired() {
+        return !this.isExpired;
+    }
 
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.getEnabled();
+    }
 }
