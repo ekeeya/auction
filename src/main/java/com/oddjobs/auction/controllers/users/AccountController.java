@@ -1,5 +1,4 @@
 package com.oddjobs.auction.controllers.users;
-
 import com.oddjobs.auction.entities.users.AdminUser;
 import com.oddjobs.auction.entities.users.Buyer;
 import com.oddjobs.auction.entities.users.Seller;
@@ -154,14 +153,14 @@ public class AccountController {
         boolean error = false;
         ResponseHandler response;
         if (user == null) {
-            message = "Account you are trying to " + status + " does not exists";
+            message = "Account you are trying to " + status + " does not exist!";
             statusCode = HttpStatus.BAD_REQUEST;
             error = true;
         } else {
             if (!user.getEnabled() && !enable) {
-                message = "Account is already Disabled";
+                message = "Account is already Disabled!";
             } else if (user.getEnabled() && enable) {
-                message = "Account is already Enabled";
+                message = "Account is already Enabled!";
             } else {
                 userService.disableEnableAccount(user, enable);
                 message = "User Account has been " + status;
@@ -174,7 +173,6 @@ public class AccountController {
                 .build();
         return ResponseHandler.generateResponse(response);
     }
-
 
 
 }
