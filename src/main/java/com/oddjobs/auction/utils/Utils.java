@@ -5,7 +5,7 @@ public class Utils {
 
 
     public static enum ROLES {
-        ROLE_ADMIN,  ROLE_USER
+        ROLE_ADMIN,  ROLE_USER, ROLE_SELLER, ROLE_PRE_VERIFIED, ROLE_BUYER
     }
     public static  enum Gender{
         MALE, FEMALE

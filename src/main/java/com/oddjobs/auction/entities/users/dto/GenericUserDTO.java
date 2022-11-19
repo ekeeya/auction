@@ -24,4 +24,5 @@ public class GenericUserDTO implements Serializable {
     private Utils.Gender gender;
     private String department;
     private Date createdAt;
+    private String qrCode;
 }

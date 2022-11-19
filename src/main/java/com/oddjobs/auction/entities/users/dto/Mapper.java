@@ -18,8 +18,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class Mapper {
 
-    public GenericUserDTO toDTO(User user){
+    public GenericUserDTO toDTO(User user, Object qrCode){
+
         GenericUserDTO userDTO = new GenericUserDTO();
+
+        if (qrCode != null){
+            userDTO.setQrCode(qrCode.toString());
+        }
         userDTO.setUsername(user.getUsername());
         userDTO.setEmail(user.getEmail());
         userDTO.setId(user.getId());

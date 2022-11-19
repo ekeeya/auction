@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "jwt.refresh_token_expires",
+      "type": "java.lang.Integer",
+      "description": "Time it takes the refresh token to expire (milliseconds)."
+    },
+    {
+      "name": "jwt.issuer",
+      "type": "java.lang.String",
+      "description": "JWT token issuer."
+    }
+    ] }

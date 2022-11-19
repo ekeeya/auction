@@ -1,18 +1,22 @@
 package com.oddjobs.auction.services.users;
 
 import com.oddjobs.auction.entities.users.User;
+import com.oddjobs.auction.entities.users.forms.RegisterForm;
 import com.oddjobs.auction.utils.Utils;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
 
-public interface UserService{
+public interface UserService extends UserDetailsService {
 
     User save(User user);
     User findByUsername(String username);
     User getUserById(Long id);
     void disableEnableAccount(User user, boolean value);
     void deleteAccount(User user, boolean permanent);
+
+    User registerUser(RegisterForm registerForm) throws  Exception;
     User findByEmail(String email);
     Page<User> getAllUsers(int pageNo, int size, String sortBy);
     List<User> findByAccountType(Utils.ACCOUNT_TYPE accountType, int pageNo, int size, String sortBy);

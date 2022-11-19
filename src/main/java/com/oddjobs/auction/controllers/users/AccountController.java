@@ -1,4 +1,5 @@
 package com.oddjobs.auction.controllers.users;
+
 import com.oddjobs.auction.entities.users.AdminUser;
 import com.oddjobs.auction.entities.users.Buyer;
 import com.oddjobs.auction.entities.users.Seller;
@@ -7,14 +8,21 @@ import com.oddjobs.auction.entities.users.dto.GenericUserDTO;
 import com.oddjobs.auction.entities.users.dto.Mapper;
 import com.oddjobs.auction.entities.users.dto.ResponseHandler;
 import com.oddjobs.auction.entities.users.forms.RegisterForm;
+import com.oddjobs.auction.services.TokenProviderService;
 import com.oddjobs.auction.services.users.UserService;
-import com.oddjobs.auction.utils.Utils;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.qr.QrData;
+import dev.samstevens.totp.qr.QrDataFactory;
+import dev.samstevens.totp.qr.QrGenerator;
+import dev.samstevens.totp.secret.SecretGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -22,20 +30,28 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
 @Slf4j
 @RestController
 @ResponseBody
-@RequestMapping("/api/account")
+@RequestMapping("/api/accounts")
 @RequiredArgsConstructor
 public class AccountController {
 
     private final Mapper mapper;
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
+    private final TokenProviderService tokenProviderService;
 
+    private final QrDataFactory qrDataFactory;
+    private final QrGenerator qrGenerator;
+    private final CodeVerifier verifier;
 
     @GetMapping("/users")
     @RolesAllowed({"ROLE_ADMIN"})
@@ -50,14 +66,14 @@ public class AccountController {
             ResponseHandler response = new ResponseHandler.ResponseHandlerBuilder()
                     .error(false)
                     .message("success")
-                    .data(mapper.toDTO(user))
+                    .data(mapper.toDTO(user, null))
                     .status(HttpStatus.OK)
                     .build();
             return ResponseHandler.generateResponse(response);
         } else {
             Page<User> users = userService.getAllUsers(page, size, "username");
 
-            List<GenericUserDTO> allUsers = users.getContent().stream().map(mapper::toDTO).collect(Collectors.toList());
+            List<GenericUserDTO> allUsers = users.getContent().stream().map(r -> mapper.toDTO(r, null)).collect(Collectors.toList());
             ResponseHandler response = new ResponseHandler.ResponseHandlerBuilder()
                     .error(false)
                     .message("success")
@@ -72,76 +88,76 @@ public class AccountController {
 
     }
 
+
     @PostMapping("/register")
-    @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<?> registerUser(
             @RequestBody @Valid RegisterForm registerForm, BindingResult bindingResult) {
         ResponseHandler response;
+        String qrCodeImage = null;
         String messages;
-        if (registerForm.emailAlreadyExists(userService)) {
-            messages = "Email already exists";
-            ObjectError error = new ObjectError(bindingResult.getObjectName(), messages);
-            bindingResult.addError(error);
-
-        }
-        if (registerForm.usernameAlreadyExists(userService)) {
-            messages = "Username already exists";
-            ObjectError error = new ObjectError(bindingResult.getObjectName(), messages);
-            bindingResult.addError(error);
-        }
-        if (bindingResult.hasErrors()) {
-            List<ObjectError> errors = bindingResult.getAllErrors();
-            registerForm.setErrors(errors);
-            messages = "Errors in your request";
-            response = new ResponseHandler.ResponseHandlerBuilder()
-                    .error(true)
-                    .data(registerForm.getReadableErrors())
-                    .status(HttpStatus.BAD_REQUEST)
-                    .message(messages)
-                    .build();
-
-        } else {
-
-            String accountType = registerForm.getAccountType();
-            User user;
-            if (accountType.equals(Utils.ACCOUNT_TYPE.SELLER.name())) {
-                user = new Seller();
-                ((Seller) user).setIdentification(registerForm.getIdentification());
-                ((Seller) user).setName(registerForm.getName());
-                ((Seller) user).setNin(registerForm.getNin());
-
-            } else if (accountType.equals(Utils.ACCOUNT_TYPE.BUYER.name())) {
-                user = new Buyer();
-                ((Buyer) user).setFirstname(registerForm.getFirstname());
-                ((Buyer) user).setLastname(registerForm.getLastname());
-                ((Buyer) user).setGender(registerForm.getGender());
+        Object data = null;
+        try {
+            if (bindingResult.hasErrors()) {
+                List<ObjectError> errors = bindingResult.getAllErrors();
+                registerForm.setErrors(errors);
+                messages = "Errors in your request";
+                data = registerForm.getReadableErrors();
             } else {
-                user = new AdminUser();
-                ((AdminUser) user).setFirstname(registerForm.getFirstname());
-                ((AdminUser) user).setLastname(registerForm.getLastname());
-                ((AdminUser) user).setDepartment(registerForm.getDepartment());
+                User user = userService.registerUser(registerForm);
+                if (user.isEnabled()) {
+                    QrData qrData = qrDataFactory.newBuilder().label(user.getUsername()).secret(user.getSecret()).issuer("Auction").build();
+                    qrCodeImage = getDataUriForImage(qrGenerator.generate(qrData), qrGenerator.getImageMimeType());
+                }
+                response = new ResponseHandler.ResponseHandlerBuilder()
+                        .error(false)
+                        .data(mapper.toDTO(user, qrCodeImage))
+                        .status(HttpStatus.OK)
+                        .message("User " + user.getUsername() + " successfully registered")
+                        .build();
+                return ResponseHandler.generateResponse(response);
             }
-            user.setUsername(registerForm.getUsername());
-            user.setPassword(passwordEncoder.encode(registerForm.getPassword()));
-            user.setAccountType(Utils.ACCOUNT_TYPE.valueOf(accountType));
-            user.setEmail(registerForm.getEmail());
-            user.setAddress(registerForm.getAddress());
-            User u = userService.save(user);
-            response = new ResponseHandler.ResponseHandlerBuilder()
-                    .error(false)
-                    .data(mapper.toDTO(u))
-                    .status(HttpStatus.OK)
-                    .message("User " + user.getUsername() + " successfully registered")
-                    .build();
+
+        } catch (Exception e) {
+            messages = e.getMessage();
         }
+
+        response = new ResponseHandler.ResponseHandlerBuilder()
+                .error(true)
+                .data(data)
+                .status(HttpStatus.BAD_REQUEST)
+                .message(messages)
+                .build();
+
         return ResponseHandler.generateResponse(response);
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<?> verifyOtpCode(
+            @RequestParam(value = "code") String code
+    ) {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        String username = securityContext.getAuthentication().getName();
+        User user = userService.findByUsername(username);
+        if (!verifier.isValidCode(user.getSecret(), code)) {
+            return ResponseHandler.generateResponse(new ResponseHandler.ResponseHandlerBuilder()
+                    .error(true)
+                    .data(null)
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message("Invalid or Expired OTP Code")
+                    .build());
+        } else {
+            String access_token = tokenProviderService.createToken(user, true);
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("access_token", access_token);
+            return ResponseEntity.ok(tokens);
+        }
     }
 
     @GetMapping("/changeStatus/{username}")
     @RolesAllowed({"ROLE_ADMIN"})
     @PreAuthorize("#username != authentication.principal.username")
     public ResponseEntity<?> disableAccount(
-            @PathVariable(value="username") String username,
+            @PathVariable(value = "username") String username,
             @RequestParam(name = "enable") boolean enable
     ) {
         User user = userService.findByUsername(username);

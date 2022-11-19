@@ -3,6 +3,7 @@ package com.oddjobs.auction.entities.users.forms;
 import com.oddjobs.auction.services.users.UserService;
 import com.oddjobs.auction.utils.Utils;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -10,11 +11,10 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.HashMap;
 import java.util.Map;
-import com.oddjobs.auction.entities.users.User;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor(force = true)
-
 public class RegisterForm extends BaseForm{
 
     @NotNull
@@ -26,6 +26,9 @@ public class RegisterForm extends BaseForm{
     private String email;
     private String address;
     private String name;
+
+
+    private  boolean enable2Fa =  true;
 
     @NotNull
     private String accountType;
@@ -39,12 +42,4 @@ public class RegisterForm extends BaseForm{
     private  Utils.Gender gender;
     private String identification;
     private String department;
-
-    public boolean emailAlreadyExists(UserService userService){
-        return  userService.findByEmail(this.email) != null;
-    }
-
-    public boolean usernameAlreadyExists(UserService userService){
-        return  userService.findByUsername(this.username) != null;
-    }
 }

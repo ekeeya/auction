@@ -10,9 +10,11 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,11 +42,16 @@ public  class User extends BaseEntity implements UserDetails {
 
     @Column(name="role")
     @Enumerated(EnumType.STRING)
-    private Utils.ROLES role = Utils.ROLES.ROLE_USER;
+    private Utils.ROLES role = Utils.ROLES.ROLE_PRE_VERIFIED;
 
     private String email;
 
     private String address;
+
+
+    private boolean using2FA;
+
+    private String secret;
 
     @Column(name="is_expired", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isExpired = false;
@@ -58,7 +65,9 @@ public  class User extends BaseEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(String.valueOf(role)));
+        return authorities;
     }
 
     @Override
