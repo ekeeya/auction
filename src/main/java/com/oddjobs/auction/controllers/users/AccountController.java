@@ -9,11 +9,12 @@ import com.oddjobs.auction.entities.users.dto.ResponseHandler;
 import com.oddjobs.auction.entities.users.forms.RegisterForm;
 import com.oddjobs.auction.services.users.UserService;
 import com.oddjobs.auction.utils.Utils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -28,26 +29,22 @@ import java.util.stream.Collectors;
 @RestController
 @ResponseBody
 @RequestMapping("/api/account")
+@RequiredArgsConstructor
 public class AccountController {
+
     private final Mapper mapper;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public AccountController(Mapper mapper, UserService userService, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
-        this.mapper = mapper;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @GetMapping("/users")
+    @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<Object> getUserByUsername(
             @RequestParam(name = "username", required = false) String username,
             @RequestParam(name = "size", required = false, defaultValue = "10") int size,
             @RequestParam(name = "page", required = false, defaultValue = "0") int page
 
     ) {
-
         if (username != null) {
             User user = userService.findByUsername(username);
             ResponseHandler response = new ResponseHandler.ResponseHandlerBuilder()
@@ -76,7 +73,7 @@ public class AccountController {
     }
 
     @PostMapping("/register")
-    @RolesAllowed({"ADMIN"})
+    @RolesAllowed({"ROLE_ADMIN"})
     public ResponseEntity<?> registerUser(
             @RequestBody @Valid RegisterForm registerForm, BindingResult bindingResult) {
         ResponseHandler response;
@@ -140,13 +137,14 @@ public class AccountController {
         return ResponseHandler.generateResponse(response);
     }
 
-    @GetMapping("/changeStatus")
-    @RolesAllowed({"ADMIN"})
+    @GetMapping("/changeStatus/{username}")
+    @RolesAllowed({"ROLE_ADMIN"})
+    @PreAuthorize("#username != authentication.principal.username")
     public ResponseEntity<?> disableAccount(
-            @RequestParam(name = "userId") Long userId,
+            @PathVariable(value="username") String username,
             @RequestParam(name = "enable") boolean enable
     ) {
-        User user = userService.getUserById(userId);
+        User user = userService.findByUsername(username);
         String status = enable ? "Enabled" : "Disabled";
         String message;
         HttpStatus statusCode = HttpStatus.OK;

@@ -34,7 +34,7 @@ public class RegisterForm extends BaseForm{
     private final String nin;
     private String firstname;
     private String lastname;
-    private final Utils.ROLES role = Utils.ROLES.USER;
+    private final Utils.ROLES role = Utils.ROLES.ROLE_USER;
     private final Map<String, String> settings = new HashMap<>();
     private  Utils.Gender gender;
     private String identification;

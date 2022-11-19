@@ -40,7 +40,7 @@ public  class User extends BaseEntity implements UserDetails {
 
     @Column(name="role")
     @Enumerated(EnumType.STRING)
-    private Utils.ROLES role = Utils.ROLES.USER;
+    private Utils.ROLES role = Utils.ROLES.ROLE_USER;
 
     private String email;
 

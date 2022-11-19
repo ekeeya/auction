@@ -1,8 +1,11 @@
 package com.oddjobs.auction.utils;
 
 public class Utils {
+
+
+
     public static enum ROLES {
-        ADMIN, REPORTS, COMMUNICATIONS, USER
+        ROLE_ADMIN,  ROLE_USER
     }
     public static  enum Gender{
         MALE, FEMALE
@@ -26,6 +29,9 @@ public class Utils {
             public static final String SELLER= "SELLER";
         }
     }
+
+
+
 
 
 }
