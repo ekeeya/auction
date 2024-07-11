@@ -1,0 +1,53 @@
+/*
+ * Online auctioning system
+ *
+ * Copyright (c)  $today.year- , Sky Castle Auction Hub ltd. - www.skycastleauctionhub.com
+ *
+ *
+ * Created by Emmanuel Keeya Lubowa - ekeeya@skycastleauctionhub.com <ekeeya@skycastleauctionhub.com>.
+ *
+ * This program is not free software.
+ *
+ * NOTICE: All information contained herein is, and remains the property of Sky Castle Auction Hub ltd. - www.skycastleauctionhub.com
+ */
+
+package com.skycastle.auction.entities.products.vehicles;
+import com.skycastle.auction.entities.products.InspectionReport;
+import com.skycastle.auction.entities.products.Product;
+import com.skycastle.auction.utils.Utils;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper = true)
+@Entity
+@Data
+@DiscriminatorValue(value= Utils.PRODUCT_CATEGORIES.Values.VEHICLES)
+public class Vehicle extends Product {
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "v_type_id", referencedColumnName = "id")
+    private VehicleType vehicleType;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "model_id", referencedColumnName = "id")
+    private VehicleModel vehicleModel;
+
+    @Column(unique = true, nullable = false)
+    private String vin;
+    private Long odometer;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="fuel_type")
+    private Utils.FUEL_TYPES fuelType;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "body_style_id", referencedColumnName = "id")
+    private VehicleBodyStyle bodyStyle;
+
+    @Enumerated(EnumType.STRING)
+    private Utils.TRANSMISSION transmission;
+
+    @Column(name="reg_no", unique = true)
+    private String regNo;
+}

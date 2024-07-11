@@ -1,0 +1,3 @@
+CREATE EXTENSION IF NOT EXISTS hstore;
+-- INSERT INTO auth_user(account_type,using2fa, username, name, password) values ('SELLER','t','seller', 'The American Embassy', '$2a$10$wZ4wMk4DoUBXy6CjOGVWYOFzApY5owhg7HYuLNd7Tfmb9heTqCmhe' ) ON CONFLICT (username) DO NOTHING;
+-- INSERT INTO auth_user(account_type, using2fa,username,role, firstname,lastname,department, password) values ('ADMIN','t','admin','ROLE_ADMIN', 'Elvis','Lubowa','Management', '$2a$10$wZ4wMk4DoUBXy6CjOGVWYOFzApY5owhg7HYuLNd7Tfmb9heTqCmhe') ON CONFLICT (username) DO NOTHING;
